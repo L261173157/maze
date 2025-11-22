@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://de2kamtbeihks"]
+
+[ext_resource type="Script" uid="uid://cjwvwhuthtee8" path="res://Main.cs" id="1_ig7tw"]
+
+[node name="main" type="Node2D"]
+script = ExtResource("1_ig7tw")
+
+[node name="start" type="Button" parent="."]
+offset_left = 432.0
+offset_top = 136.0
+offset_right = 624.0
+offset_bottom = 256.0
+theme_override_font_sizes/font_size = 32
+text = "迷宫游戏"
+
+[connection signal="pressed" from="start" to="." method="_on_MazeGameStartButton_pressed"]
