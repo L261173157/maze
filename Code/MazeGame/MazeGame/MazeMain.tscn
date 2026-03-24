@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=4 uid="uid://bvo8bgw3nbidc"]
+[gd_scene load_steps=27 format=4 uid="uid://bvo8bgw3nbidc"]
 
 [ext_resource type="Script" uid="uid://b4r7ntre8u4u6" path="res://MazeGame/MazeMain.cs" id="1_2dm47"]
 [ext_resource type="Script" uid="uid://dy35fe40y8w64" path="res://MazeGame/CharacterBody2d.cs" id="1_cyyfa"]
@@ -11,6 +11,8 @@
 [ext_resource type="Script" uid="uid://c1e1xhberrdix" path="res://MazeGame/InventoryUI.cs" id="8_xeokc"]
 [ext_resource type="Script" uid="uid://dfcqr5t4cg0sf" path="res://MazeGame/ItemCandle.cs" id="9_g6mkp"]
 [ext_resource type="Script" uid="uid://ten7hlmcbx5n" path="res://MazeGame/Item1Btn.cs" id="9_prp3h"]
+[ext_resource type="Script" path="res://MazeGame/AppleGoal.cs" id="11_apple"]
+[ext_resource type="Script" path="res://MazeGame/InteractionPromptLabel.cs" id="12_prompt"]
 [ext_resource type="Texture2D" uid="uid://b0f1npt3o7oi7" path="res://MazeGame/asset/candle-kx.png" id="12_08bs1"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_t3yvu"]
@@ -110,9 +112,9 @@ texture = SubResource("GradientTexture2D_edula")
 visible = false
 color = Color(0.038397167, 0.038397167, 0.03839716, 1)
 
-[node name="apple" type="StaticBody2D" parent="."]
+[node name="apple" type="Area2D" parent="."]
 position = Vector2(928, 672)
-physics_material_override = SubResource("PhysicsMaterial_2dm47")
+script = ExtResource("11_apple")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="apple"]
 shape = SubResource("RectangleShape2D_nfor8")
@@ -134,6 +136,17 @@ offset_right = 40.0
 offset_bottom = 23.0
 theme_override_font_sizes/font_size = 32
 text = "迷宫游戏"
+
+[node name="InteractionPrompt" type="Label" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 0
+offset_left = 360.0
+offset_top = 592.0
+offset_right = 664.0
+offset_bottom = 631.0
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+script = ExtResource("12_prompt")
 
 [node name="ResetBtn" type="Button" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -178,12 +191,14 @@ layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 64
 text = "物品2"
+script = ExtResource("9_prp3h")
 
 [node name="Item3Btn" type="Button" parent="CanvasLayer/Control/InventoryUI"]
 layout_mode = 2
 focus_mode = 0
 theme_override_font_sizes/font_size = 64
 text = "物品3"
+script = ExtResource("9_prp3h")
 
 [node name="ItemCandle" type="Area2D" parent="."]
 position = Vector2(136, 68)
@@ -199,3 +214,6 @@ texture = ExtResource("12_08bs1")
 
 [connection signal="pressed" from="CanvasLayer/Control/ResetBtn" to="." method="RestartGame"]
 [connection signal="pressed" from="CanvasLayer/Control/InventoryUI/Item1Btn" to="CanvasLayer/Control/InventoryUI" method="OnItemButtonPressed" binds= [1]]
+[connection signal="pressed" from="CanvasLayer/Control/InventoryUI/Item2Btn" to="CanvasLayer/Control/InventoryUI" method="OnItemButtonPressed" binds= [2]]
+[connection signal="pressed" from="CanvasLayer/Control/InventoryUI/Item3Btn" to="CanvasLayer/Control/InventoryUI" method="OnItemButtonPressed" binds= [3]]
+[connection signal="GoalReached" from="apple" to="." method="_on_Apple_Collected"]

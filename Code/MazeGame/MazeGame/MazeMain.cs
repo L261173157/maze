@@ -13,16 +13,12 @@ public partial class MazeMain : Node2D
     {
         Player = GetNode<CharacterBody2d>("Player");
         WinLabel = GetNode<WinLabel>("CanvasLayer/Control/winLabel");
-        Player.AppleCollected += _on_Apple_Collected;
     }
 
     //重新开始游戏
     public void RestartGame()
     {
-        Player.ResetPosition();
-        isWin = false;
-        var inventoryUI = GetNode<InventoryUI>("CanvasLayer/Control/InventoryUI");
-        inventoryUI.ClearInventory();
+        GetTree().ReloadCurrentScene();
     }
 
     private void _on_Apple_Collected()

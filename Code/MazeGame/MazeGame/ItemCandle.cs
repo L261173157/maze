@@ -1,54 +1,38 @@
 using Godot;
 using System;
 
-public partial class ItemCandle : Area2D
+public partial class ItemCandle : PlayerTriggerArea
 {
 	//在地图上的蜡烛物品
-	
+
 	//背包UI节点
 	public InventoryUI inventoryUI;
-	//玩家是否在区域范围内
-	public bool isPlayerInArea = false;
-	// Called when the node enters the scene tree for the first time.
+	protected override bool RequiresInteractKey => true;
+	protected override string PromptText => "按确认键拾取蜡烛";
+
 	public override void _Ready()
 	{
-		BodyEntered += OnBodyEntered;
-		BodyExited += OnBodyExited;
+		base._Ready();
 		inventoryUI = GetParent().GetNode<InventoryUI>("CanvasLayer/Control/InventoryUI");
 	}
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+	protected override void OnPlayerEntered(CharacterBody2d player)
 	{
-		//玩家在范围内，按下交互键拾取物品
-		if(isPlayerInArea && Input.IsActionJustPressed("ui_accept"))
+		GD.Print("Player entered candle area");
+	}
+
+	protected override void OnPlayerExited(CharacterBody2d player)
+	{
+		GD.Print("Player exited candle area");
+	}
+
+	protected override void OnPlayerTriggered(CharacterBody2d player)
+	{
+		CandleItem candleItem = new CandleItem();
+		if (inventoryUI.inventory.AddItem(candleItem))
 		{
-			//创建蜡烛物品数据
-			CandleItem candleItem = new CandleItem();
-			//向背包添加物品
-			inventoryUI.inventory.AddItem(candleItem);
-			//从场景中移除物品
+			HideInteractionPrompt();
 			QueueFree();
 		}
 	}
-
-	public void OnBodyEntered(Node2D body)
-	{
-		if (body is CharacterBody2d player)
-		{
-			isPlayerInArea = true;
-			GD.Print("Player entered candle area");
-		}
-	}
-
-	public void OnBodyExited(Node2D body)
-	{
-		if (body is CharacterBody2d player)
-		{
-			isPlayerInArea = false;
-			GD.Print("Player exited candle area");
-		}
-	}
-	
-
 }

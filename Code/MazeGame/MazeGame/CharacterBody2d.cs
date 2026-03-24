@@ -1,6 +1,5 @@
 using Godot;
 using System;
-using System.Security.Cryptography.X509Certificates;
 
 /// <summary>
 /// 角色移动控制类
@@ -25,12 +24,6 @@ public partial class CharacterBody2d : CharacterBody2D
     public MazeMain mazeMain;
 
     /// <summary>
-    /// 苹果收集事件信号
-    /// </summary>
-    [Signal]
-    public delegate void AppleCollectedEventHandler();
-
-    /// <summary>
     /// 初始化方法，在节点进入场景时调用
     /// 保存初始位置并获取迷宫主控制器引用
     /// </summary>
@@ -39,7 +32,7 @@ public partial class CharacterBody2d : CharacterBody2D
         base._Ready();
         GameManager.Player = this;
         InitialPosition = Position;
-        mazeMain = GetNode<MazeMain>("/root/MazeMain");
+        mazeMain = GetParent<MazeMain>();
     }
 
     /// <summary>
@@ -51,6 +44,7 @@ public partial class CharacterBody2d : CharacterBody2D
         // 游戏胜利时停止移动
         if(mazeMain.isWin)
         {
+            Velocity = Vector2.Zero;
             return;
         }
 
@@ -73,21 +67,6 @@ public partial class CharacterBody2d : CharacterBody2D
         Velocity = inputVector * Speed;
         MoveAndSlide();
 
-        // 检测碰撞终点
-        var collisionInfo = MoveAndCollide(Velocity * (float)delta);
-        if (collisionInfo != null)
-        {
-            var collider = collisionInfo.GetCollider() as Node;
-            GD.Print("Collided with: ", collider.Name);
-            
-            // 判断是否与苹果碰撞，触发信号
-            if(collider.Name=="apple")
-            {
-                EmitSignal(nameof(AppleCollected));
-            }
-            
-        }
-    
     }
 
     /// <summary>

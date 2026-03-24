@@ -17,6 +17,7 @@ public partial class CandleEffect : Node
 	public float currentBrightness;
 	//玩家节点
 	public CharacterBody2d player;
+	private PointLight2D playerLight;
 
 	public CandleEffect(float duration, float lightIncrease, float brightnessIncrease)
 	{
@@ -31,8 +32,9 @@ public partial class CandleEffect : Node
 		if (GameManager.Player != null)
 		{
 			player = GameManager.Player as CharacterBody2d;
-			currentBrightness = player.GetNode<PointLight2D>("PointLight2D").Energy;
-			currentRange = player.GetNode<PointLight2D>("PointLight2D").TextureScale;
+			playerLight = player.GetNode<PointLight2D>("PointLight2D");
+			currentBrightness = playerLight.Energy;
+			currentRange = playerLight.TextureScale;
 		}
 	}
 
@@ -42,10 +44,15 @@ public partial class CandleEffect : Node
 
 	public void ActivateCandle()
 	{
+		if (player == null || playerLight == null)
+		{
+			QueueFree();
+			return;
+		}
+
 		//增加玩家照明范围
-		PointLight2D playerLight = player.GetNode<PointLight2D>("PointLight2D");
-		playerLight.TextureScale = currentRange + lightIncrease;
-		playerLight.Energy = currentBrightness + brightnessIncrease;
+		playerLight.TextureScale += lightIncrease;
+		playerLight.Energy += brightnessIncrease;
 		GD.Print("Candle effect activated: Range increased to " + playerLight.TextureScale + ", Brightness increased to " + playerLight.Energy);
 		//启动计时器，持续duration时间后关闭效果
 		Timer timer = new Timer();
@@ -54,11 +61,10 @@ public partial class CandleEffect : Node
 		timer.Timeout += () =>
 		{
 			//恢复玩家照明范围
-			playerLight.TextureScale = currentRange;
-			playerLight.Energy = currentBrightness;
+			playerLight.TextureScale -= lightIncrease;
+			playerLight.Energy -= brightnessIncrease;
 			GD.Print("Candle effect ended: Range restored to " + playerLight.TextureScale + ", Brightness restored to " + playerLight.Energy);
-			//从场景中移除计时器
-			timer.QueueFree();
+			QueueFree();
 		};
 		AddChild(timer);
 		timer.Start();

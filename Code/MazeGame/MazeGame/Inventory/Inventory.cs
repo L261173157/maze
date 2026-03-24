@@ -11,6 +11,7 @@ public class Inventory
     public List<ItemData> Items2 { get; set; } = new List<ItemData>();
     // 3号格子
     public List<ItemData> Items3 { get; set; } = new List<ItemData>();
+    public event Action Changed;
 
     public Inventory()
     {
@@ -18,63 +19,16 @@ public class Inventory
     }
 
     //背包添加物品
-    public void AddItem(ItemData item)
+    public bool AddItem(ItemData item)
     {
-        //判断哪个格子空，如果是空的添加；如果不是空的，是否和已有的是一个类型的物品；如果是同一类型物品，是否已经达到存储上限
-        if (Items1.Count == 0)
+        // 先尝试堆叠到同类型且未满的槽位，再放入空槽。
+        if (TryAddToSlot(Items1, item) || TryAddToSlot(Items2, item) || TryAddToSlot(Items3, item))
         {
-            Items1.Add(item);
+            NotifyChanged();
+            return true;
         }
-        else if (Items1.Count != 0)
-        {
-            if (Items1[0].Id == item.Id)
-            {
-                if (Items1.Count < item.MaxStack)
-                {
-                    Items1.Add(item);
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
-        else if (Items2.Count == 0)
-        {
-            Items2.Add(item);
-        }
-        else if (Items2.Count != 0)
-        {
-            if (Items2[0].Id == item.Id)
-            {
-                if (Items2.Count < item.MaxStack)
-                {
-                    Items2.Add(item);
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
-        else if (Items3.Count == 0)
-        {
-            Items3.Add(item);
-        }
-        else if (Items3.Count != 0)
-        {
-            if (Items3[0].Id == item.Id)
-            {
-                if (Items3.Count < item.MaxStack)
-                {
-                    Items3.Add(item);
-                }
-                else
-                {
-                    return;
-                }
-            }
-        }
+
+        return false;
     }
 
     //背包使用物品
@@ -82,27 +36,95 @@ public class Inventory
     {
         if (slot < 1 || slot > 3)
             return;
+
+        bool removed = false;
         switch (slot)
         {
             case 1:
                 if (Items1.Count > 0)
                 {
                     Items1.RemoveAt(Items1.Count - 1);
+                    removed = true;
                 }
                 break;
             case 2:
                 if (Items2.Count > 0)
                 {
                     Items2.RemoveAt(Items2.Count - 1);
+                    removed = true;
                 }
                 break;
             case 3:
                 if (Items3.Count > 0)
                 {
                     Items3.RemoveAt(Items3.Count - 1);
+                    removed = true;
                 }
                 break;
         }
 
+        if (removed)
+        {
+            NotifyChanged();
+        }
+    }
+
+    public bool ConsumeItem(int slot)
+    {
+        var items = GetSlotItems(slot);
+        if (items == null || items.Count == 0)
+        {
+            return false;
+        }
+
+        items.RemoveAt(0);
+        NotifyChanged();
+        return true;
+    }
+
+    public void Clear()
+    {
+        Items1.Clear();
+        Items2.Clear();
+        Items3.Clear();
+        NotifyChanged();
+    }
+
+    public List<ItemData> GetSlotItems(int slot)
+    {
+        return slot switch
+        {
+            1 => Items1,
+            2 => Items2,
+            3 => Items3,
+            _ => null
+        };
+    }
+
+    private static bool TryAddToSlot(List<ItemData> slot, ItemData item)
+    {
+        if (slot.Count == 0)
+        {
+            slot.Add(item);
+            return true;
+        }
+
+        if (slot[0].Id != item.Id)
+        {
+            return false;
+        }
+
+        if (!slot[0].Stackable || slot.Count >= slot[0].MaxStack)
+        {
+            return false;
+        }
+
+        slot.Add(item);
+        return true;
+    }
+
+    private void NotifyChanged()
+    {
+        Changed?.Invoke();
     }
 }
